@@ -5,8 +5,8 @@ directly on your home machines.
 
 You can follow [this video](https://www.youtube.com/watch?v=tcDLevC7wmU) to see the major steps.
 
-0. Go to Battlecode 2025's quickstart page. This is where you should return if in doubt.
-   - https://play.battlecode.org/bc25java/home
+0. Go to Battlecode 2026's quickstart page. This is where you should return if in doubt.
+   - https://play.battlecode.org/bc26java/home
 
 ## Install Java and Git Bash
 
