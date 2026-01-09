@@ -5,8 +5,8 @@ directly on your home machines.
 
 You can follow [this video](https://www.youtube.com/watch?v=tcDLevC7wmU) to see the major steps.
 
-0. Go to Battlecode 2025's quickstart page. This is where you should return if in doubt.
-   - https://play.battlecode.org/bc25java/home
+0. Go to Battlecode 2026's quickstart page. This is where you should return if in doubt.
+   - [https://play.battlecode.org/bc26java/home](https://play.battlecode.org/bc26/quick_start)
 
 ## Install Java and Git Bash
 
@@ -63,7 +63,7 @@ git clone git@github.com:TheEvergreenStateCollege/dgp-26wi.git
 
 14. Change into your cloned directory and build the Battlecode client
 ```
-cd dgp-25au/java
+cd dgp-26wi/java
 ```
 
 15. Update the game engine version and build it
