@@ -225,14 +225,12 @@ def get_server_version(ver_data) -> str | None:
 
 def run_update(ver_data, args):
     # get new version from server
-    if args.debug: # TODO remove later
-        new_version = "1.1.0-alpha"
-    else:
-        new_version = get_server_version(ver_data)
+    new_version = get_server_version(ver_data)
     # Download package
     filename = ver_data["get_filename"](new_version)
     try:
         url = ver_data['get_url'](new_version)
+        print(url)
         download_file(url, filename)
     except Exception as e:
         print(f"Failed to download package: {e}")

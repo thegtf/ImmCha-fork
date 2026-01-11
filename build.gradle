@@ -282,7 +282,8 @@ task downloadPyPackage {
     exec {
       commandLine 'python', pythonScript.absolutePath, 'update',
         '--on-saturn', (project.findProperty("onSaturn") ?: "false").toString(),
-        '--debug', (project.findProperty("debug") ?: "false").toString()
+        '--debug', (project.findProperty("debug") ?: "false").toString(),
+        '--force-reinstall', (project.findProperty("forceReinstallPy") ?: "false").toString()
     }
   }
 }
