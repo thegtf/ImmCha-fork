@@ -5,6 +5,6 @@ This is a second course in programming and software design viewed through the le
 
 We will be participating in the [Battlecode 2026]() game AI programming competition.
 
-* [Canvas Class Link]()
-* [Syllabus]()
-* [Software Setup]()
+* [Canvas Class Link](https://canvas.evergreen.edu/courses/7979)
+* [Syllabus](./notes/Syllabus.md)
+* [Software Setup](./notes/SoftwareSetup.md)
