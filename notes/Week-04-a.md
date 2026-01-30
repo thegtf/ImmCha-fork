@@ -51,12 +51,21 @@ Then choosing "Collaborators and teams", signing in or confirming your passkey a
 
 Your local working repo has a remote called `origin` which points to the original class monorepo.
 
-You will add another remote called `team` that will point to your fork.
+```
+git remote -v
+```
+
+
+You will add another remote called `team` that will point to your fork's clone URL.
+
+```
+git remote add team git@github.com:<username>/dgp-26wi.git 
+```
 
 From now on, any private work you want only your team to see (like your Battlecode player code), you will push to / pull from `team` only.
 
 ```
-git pull team
+git pull team main
 ```
 
 instead of just
@@ -68,7 +77,7 @@ git pull
 and
 
 ```
-git push team
+git push team main
 ```
 instead of just
 ```
