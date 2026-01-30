@@ -165,6 +165,10 @@ public class RobotPlayer {
             }
         }
 
+        if (cheeseLoc == null) {
+            return;
+        }
+        
         if (rc.canPickUpCheese(cheeseLoc)) {
             rc.pickUpCheese(cheeseLoc);
             currentState = State.RETURN_TO_KING;
@@ -179,6 +183,8 @@ public class RobotPlayer {
         if (rc.canTurn(toKing)) {
             rc.turn(toKing);
         }
+
+        int rawCheese = rc.getRawCheese();
 
         if (kingLoc.distanceSquaredTo(rc.getLocation()) <= 4 ){
 
@@ -196,8 +202,6 @@ public class RobotPlayer {
         if (rc.canMove(toKing)) {
             rc.move(toKing);
         }
-
-        int rawCheese = rc.getRawCheese();
 
         if (rawCheese == 0) {
             currentState = State.FIND_CHEESE;
