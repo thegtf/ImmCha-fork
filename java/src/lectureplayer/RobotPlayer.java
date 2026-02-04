@@ -101,7 +101,7 @@ public class RobotPlayer {
         if (rc.canMoveForward()) {
             rc.moveForward();
         } else {
-            Direction random = directions[rand.nextInt(directions.length)];
+            Direction random = directions[rand.nextInt(directions.length - 1)];
 
             if (rc.canTurn()) {
                 rc.turn(random);

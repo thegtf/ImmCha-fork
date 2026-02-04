@@ -3,7 +3,17 @@ package week02a;
 import battlecode.common.*;
 import lectureplayer.RobotPlayer.SqueakType;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
+
+import java.util.EnumMap;
+import java.util.List;
+import java.util.PriorityQueue;
+import java.util.stream.Stream;
 
 
 /**
@@ -25,7 +35,7 @@ public class RobotPlayer {
      * import at the top of this file. Here, we *seed* the RNG with a constant number (6147); this makes sure
      * we get the same sequence of numbers every time this code is run. This is very useful for debugging!
      */
-    static final Random rand = new Random(6147);
+    static final Random rng = new Random(6147);
 
     /** Array containing all the possible movement directions. */
     static final Direction[] directions = {
@@ -68,11 +78,39 @@ public class RobotPlayer {
                 // different types. Here, we separate the control depending on the UnitType, so we can
                 // use different strategies on different robots. If you wish, you are free to rewrite
                 // this into a different control structure!
-                 if (rc.getType().isRatKingType()) {
+                if (rc.getType().isRatKingType()) {
 
                     runRatKing(rc);
-		         }
+                } else {
+                    Direction d = directions[rng.nextInt(directions.length)];
 
+                    if (rc.canMove(d)) {
+                        rc.move(d);
+                    }
+                }
+
+                // Every 10 turns, print out what type of robot we are.
+                if (turnCount % 100 == 0) {
+                    System.out.println("Turn " + turnCount + ": I am a " + rc.getType().toString());
+                }
+
+                if (rc.canMove(directions[0])) {
+                    rc.move(directions[0]);
+                }
+
+                // Try to move forward one step.
+                if (rc.canMoveForward()) {
+                    System.out.println("Turn " + turnCount + ": Trying to move " + rc.getDirection());
+                    rc.moveForward();
+                } else {
+                    System.out.println("couldn't move forward on turn " + turnCount + " at location " + rc.getLocation() + " facing " + rc.getDirection());
+                    // If we can't move forward, try to turn a random direction.
+                    int randomDirection = rng.nextInt(directions.length);
+                    
+                    if (rc.canTurn()) {
+                        rc.turn(directions[randomDirection]);
+                    }
+                }
             } catch (GameActionException e) {
                 // Oh no! It looks like we did something illegal in the Battlecode world. You should
                 // handle GameActionExceptions judiciously, in case unexpected events occur in the game
@@ -94,21 +132,24 @@ public class RobotPlayer {
 
         // Your code should never reach here (unless it's intentional)! Self-destruction imminent...
     }
-
     public static void moveRandom(RobotController rc) throws GameActionException {
         MapLocation forwardLoc = rc.adjacentLocation(rc.getDirection());
+
+        if (rc.canRemoveDirt(forwardLoc)) {
+            rc.removeDirt(forwardLoc);
+        }
 
         if (rc.canMoveForward()) {
             rc.moveForward();
         } else {
-            Direction random = directions[rand.nextInt(directions.length-1)];
+            Direction random = directions[rng.nextInt(directions.length)];
 
             if (rc.canTurn()) {
                 rc.turn(random);
             }
         }
     }
-
+    
     public static void runRatKing(RobotController rc) throws GameActionException {
         int currentCost = rc.getCurrentRatCost();
 
@@ -129,4 +170,6 @@ public class RobotPlayer {
         moveRandom(rc);
 
     }
-}
+        
+    }
+

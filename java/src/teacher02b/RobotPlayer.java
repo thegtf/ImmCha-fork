@@ -205,9 +205,16 @@ public class RobotPlayer {
 
         if (rawCheese == 0) {
             currentState = State.FIND_CHEESE;
+
+        if (kingLoc.distanceSquaredTo(rc.getLocation()) <= 4) {
+
+        if (rc.canTransferCheese(kingLoc, rawCheese)) {
+            rc.transferCheese(kingLoc, rawCheese);
+            currentState = State.FIND_CHEESE;
+            }
         }
-        
     }
+}
 
     public static int getFirstInt(int loc) {
         // extract 10 smallest place value bits from toInteger(loc)

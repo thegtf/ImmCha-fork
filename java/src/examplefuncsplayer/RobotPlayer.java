@@ -2,7 +2,18 @@ package examplefuncsplayer;
 
 import battlecode.common.*;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
+
+import java.util.EnumMap;
+import java.util.List;
+import java.util.PriorityQueue;
+import java.util.stream.Stream;
+
 
 /**
  * RobotPlayer is the class that describes your main robot strategy.
@@ -10,6 +21,13 @@ import java.util.Random;
  * is created!
  */
 public class RobotPlayer {
+    public static enum State {
+        INITIALIZE,
+        FIND_CHEESE,
+        RETURN_TO_KING,
+        BUILD_TRAPS,
+        EXPLORE_AND_ATTACK,
+    }
     /**
      * We will use this variable to count the number of turns this robot has been alive.
      * You can use static variables like this to save any information you want. Keep in mind that even though
