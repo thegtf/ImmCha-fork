@@ -61,7 +61,7 @@ public class CheeseFinder extends BabyRat {
             }
         }
 
-                if (rc.canMoveForward()) {
+        if (rc.canMoveForward()) {
             rc.moveForward();
             rc.setIndicatorString("Finding cheese.");
         } else {
