@@ -22,6 +22,15 @@ public abstract class BabyRat extends RobotSubPlayer {
         kingLoc = rc.getLocation();
     }
 
+    public static BabyRat createToggle(RobotController rc) throws GameActionException {
+        int numRats = rc.readSharedArray(0);
+        if ((numRats % 2) == 0) {
+            return new CheeseFinder(rc);
+        } else {
+            return new CatAttacker(rc);
+        }
+    }
+
     public static int getSqueak(SqueakType type, int value) {
         switch (type) {
             case ENEMY_RAT_KING:

@@ -4,9 +4,11 @@ import battlecode.common.*;
 
 public class RatKing extends RobotSubPlayer {
 
+    int numRats;
+
     public RatKing(RobotController rc) {
         super(rc);
-        //TODO Auto-generated constructor stub
+        numRats = 0;
     }
 
     @Override
@@ -19,6 +21,8 @@ public class RatKing extends RobotSubPlayer {
         for (MapLocation loc : potentialSpawnLocations) {
             if (spawn && rc.canBuildRat(loc)) {
                 rc.buildRat(loc);
+                numRats += 1;
+                rc.writeSharedArray(0, numRats);
                 break;
             }
 
@@ -30,9 +34,6 @@ public class RatKing extends RobotSubPlayer {
 
         // moveRandom(rc);
 
-        // TODO make more efficient and expand communication in the communication lecture
-        rc.writeSharedArray(0, rc.getLocation().x);
-        rc.writeSharedArray(1, rc.getLocation().y);
     }
     
     

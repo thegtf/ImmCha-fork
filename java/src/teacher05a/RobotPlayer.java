@@ -9,16 +9,17 @@ public class RobotPlayer {
     static boolean babyRatToggle = false;
 
     public static void run(RobotController rc) {
-        if (rc.getType().isRatKingType()) {
-            rsp = new RatKing(rc);
-        } else {
-            if (babyRatToggle) {
-                rsp = new CheeseFinder(rc);
-            } else {
-                rsp = new CatAttacker(rc);
-            }
-        }
 
+        try {
+            if (rc.getType().isRatKingType()) {
+                rsp = new RatKing(rc);
+            } else {
+                rsp = BabyRat.createToggle(rc);
+            }
+        } catch (GameActionException e) {
+            System.out.println("GameActionException in RobotPlayer:");
+            e.printStackTrace();
+        }
         while (true) {
             try {
                 rsp.doAction();

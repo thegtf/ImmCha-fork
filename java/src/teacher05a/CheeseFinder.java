@@ -19,6 +19,7 @@ public class CheeseFinder extends BabyRat {
     public CheeseFinder(RobotController rc) {
         super(rc);
         currentState = State.FIND_CHEESE;
+        rc.setIndicatorString("Cheesefinder reporting for duty");
     }
 
     public void doAction() throws GameActionException {
@@ -58,6 +59,24 @@ public class CheeseFinder extends BabyRat {
             if (rc.canRemoveDirt(loc)) {
                 rc.removeDirt(loc);
             }
+        }
+
+                if (rc.canMoveForward()) {
+            rc.moveForward();
+            rc.setIndicatorString("Finding cheese.");
+        } else {
+            d = directions[rand.nextInt(directions.length-1)];
+            if (rc.canTurn()) {
+                rc.turn(d);
+            }
+            rc.setIndicatorString("Blocked while finding cheese, turning " + d.toString());
+            return;
+        }
+
+        if ((cheeseLoc != null) && rc.canPickUpCheese(cheeseLoc)) {
+            rc.pickUpCheese(cheeseLoc);
+            currentState = State.RETURN_TO_KING;
+            rc.setIndicatorString("Returning to king.");
         }
 
     }
