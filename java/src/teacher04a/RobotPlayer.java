@@ -12,7 +12,8 @@ public class RobotPlayer {
 
     public static enum State {
         FIND_CHEESE,
-        RETURN_TO_KING,        
+        RETURN_TO_KING,
+        MINE_CHEESE,  
     }
 
     public static enum SqueakType {
@@ -67,6 +68,9 @@ public class RobotPlayer {
                     case RETURN_TO_KING:
                         runReturnToKing(rc);
                         break;
+                    case MINE_CHEESE:
+                        runMineCheese(rc);
+                        break;
                 }
                 }
             } catch (GameActionException e) {
@@ -100,6 +104,7 @@ public class RobotPlayer {
         }
 
         Message[] squeaks = rc.readSqueaks(rc.getRoundNum());
+        System.out.println("Received " + squeaks.length + " squeaks");
 
         for (Message msg : squeaks) {
             int rawSqueak = msg.getBytes();
@@ -153,6 +158,9 @@ public class RobotPlayer {
 
     }
 
+    public static void runMineCheese(RobotController rc) throws GameActionException {
+    }
+
     public static void runFindCheese(RobotController rc) throws GameActionException {
         // search for cheese
         MapInfo[] nearbyInfos = rc.senseNearbyMapInfos();
@@ -172,12 +180,18 @@ public class RobotPlayer {
             }
             if (info.hasCheeseMine()) {
                 mineLoc = info.getMapLocation();
+                System.out.println("Found a cheese mine at " + mineLoc.toString());
+                rc.setIndicatorString("Found a cheese mine at " + mineLoc.toString());
             }
             if (rc.canRemoveDirt(loc)) {
                 rc.removeDirt(loc);
             }
         }
 
+        goForthAndCheese(rc, cheeseLoc);        
+    }
+
+    public static void goForthAndCheese(RobotController rc, MapLocation cheeseLoc) throws GameActionException {
         if (rc.canMoveForward()) {
             rc.moveForward();
             rc.setIndicatorString("Finding cheese.");
@@ -195,19 +209,20 @@ public class RobotPlayer {
             currentState = State.RETURN_TO_KING;
             rc.setIndicatorString("Returning to king.");
         }
-        
+
     }
 
     public static void runReturnToKing(RobotController rc) throws GameActionException {
-        Direction toKing = rc.getLocation().directionTo(kingLoc);
-        MapLocation nextLoc = rc.getLocation().add(toKing);
+        MapLocation here = rc.getLocation();
+        Direction toKing = here.directionTo(kingLoc);
+        MapLocation nextLoc = here.add(toKing);
         int rawCheese = rc.getRawCheese();
 
         if (rc.canTurn(toKing)) {
             rc.turn(toKing);
         }
 
-        if (rc.canSenseLocation(kingLoc) && (kingLoc.distanceSquaredTo(rc.getLocation()) <= 4 )) {
+        if (rc.canSenseLocation(kingLoc) && (kingLoc.distanceSquaredTo(here) <= 4 )) {
 
             RobotInfo[] kingLocations = rc.senseNearbyRobots(kingLoc, 8, rc.getTeam());
 
@@ -224,14 +239,31 @@ public class RobotPlayer {
                         currentState = State.FIND_CHEESE;
                     }
                     break;
+                } else {
+                    // we found another baby rat, squeak or read squeaks,
+                    // based on whether we have a mine location to go to
+                    if (mineLoc != null) {
+                        int msgBytes = getSqueak(SqueakType.CHEESE_MINE, toInteger(mineLoc));
+                        rc.squeak(msgBytes);
+                        System.out.println("From " + here.toString() + " Sent a squeak " + msgBytes + " for mine at " + mineLoc.toString());
+                        // go back to finding cheese mode
+                    } else {
+                        Message[] squeakMessages = rc.readSqueaks(rc.getRoundNum());
+
+                        for (Message m : squeakMessages) {
+                            int msg = m.getBytes();
+                            if (getSqueakType(msg) == SqueakType.CHEESE_MINE) {
+                                int encodedLoc = getSqueakValue(msg);
+                                mineLoc = new MapLocation(getX(encodedLoc), getY(encodedLoc));
+                            }
+                        }
+                    }
+                    // whether we already have a mine location or just received one
+                    // go back to mining cheese
+                    currentState = State.FIND_CHEESE;
                 }
             }
 
-            if (mineLoc != null) {
-                int msgBytes = getSqueak(SqueakType.CHEESE_MINE, toInteger(mineLoc));
-                rc.squeak(msgBytes);
-                mineLoc = null;
-            }
         }
 
         if (rc.canRemoveDirt(nextLoc)) {
