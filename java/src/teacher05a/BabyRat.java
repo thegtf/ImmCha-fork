@@ -13,6 +13,7 @@ public abstract class BabyRat extends RobotSubPlayer {
         ENEMY_RAT_KING,
         ENEMY_COUNT,
         CHEESE_MINE,
+        CHEESE_MINE_ACK,
         CAT_FOUND,
     }
 
