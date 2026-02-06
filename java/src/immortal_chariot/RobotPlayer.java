@@ -1,9 +1,6 @@
 package teacher04a;
 
 import battlecode.common.*;
-import teacher02b.BabyRat;
-import teacher02b.CatAttacker;
-import teacher02b.CheeseFinder;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -42,14 +39,6 @@ public class RobotPlayer {
 
         // Only baby rats will pay attention to this
         currentState = State.FIND_CHEESE;
-
-        if (rc.getType().isBabyRatType()) {
-            if (rc.getID() % 2 == 0) {
-                brc = new CheeseFinder();
-            } else {
-                brc = new CatAttacker();
-            }
-        }
 
         while (true) {
         try {
@@ -180,8 +169,6 @@ public class RobotPlayer {
             }
             if (info.hasCheeseMine()) {
                 mineLoc = info.getMapLocation();
-                System.out.println("Found a cheese mine at " + mineLoc.toString());
-                rc.setIndicatorString("Found a cheese mine at " + mineLoc.toString());
             }
             if (rc.canRemoveDirt(loc)) {
                 rc.removeDirt(loc);
@@ -239,31 +226,14 @@ public class RobotPlayer {
                         currentState = State.FIND_CHEESE;
                     }
                     break;
-                } else {
-                    // we found another baby rat, squeak or read squeaks,
-                    // based on whether we have a mine location to go to
-                    if (mineLoc != null) {
-                        int msgBytes = getSqueak(SqueakType.CHEESE_MINE, toInteger(mineLoc));
-                        rc.squeak(msgBytes);
-                        System.out.println("From " + here.toString() + " Sent a squeak " + msgBytes + " for mine at " + mineLoc.toString());
-                        // go back to finding cheese mode
-                    } else {
-                        Message[] squeakMessages = rc.readSqueaks(rc.getRoundNum());
-
-                        for (Message m : squeakMessages) {
-                            int msg = m.getBytes();
-                            if (getSqueakType(msg) == SqueakType.CHEESE_MINE) {
-                                int encodedLoc = getSqueakValue(msg);
-                                mineLoc = new MapLocation(getX(encodedLoc), getY(encodedLoc));
-                            }
-                        }
-                    }
-                    // whether we already have a mine location or just received one
-                    // go back to mining cheese
-                    currentState = State.FIND_CHEESE;
                 }
             }
 
+            if (mineLoc != null) {
+                int msgBytes = getSqueak(SqueakType.CHEESE_MINE, toInteger(mineLoc));
+                rc.squeak(msgBytes);
+                mineLoc = null;
+            }
         }
 
         if (rc.canRemoveDirt(nextLoc)) {
@@ -292,10 +262,6 @@ public class RobotPlayer {
         return loc >> 10;
     }
 
-    public static int toInteger(MapLocation loc) {
-        return (loc.x << 6) | loc.y;
-    }
-
     public static int getX(int encodedLoc) {
         return encodedLoc >> 6;
     }
@@ -303,28 +269,12 @@ public class RobotPlayer {
     public static int getY(int encodedLoc) {
         return encodedLoc % 64;
     }
-
-    public static int getSqueak(SqueakType type, int value) {
-        switch (type) {
-            case ENEMY_RAT_KING:
-                return (1 << 12) | value;
-            case ENEMY_COUNT:
-                return (2 << 12) | value;
-            case CHEESE_MINE:
-                return (3 << 12) | value;
-            case CAT_FOUND:
-                return (4 << 12) | value;
-            default:
-                return value;
-        }
-    }
     
     public static SqueakType getSqueakType(int rawSqueak) {
         return squeakTypes[rawSqueak >> 12];
     }
 
     public static int getSqueakValue(int rawSqueak) {
-        // Only uses lower 12 bits
         return rawSqueak % 4096;
     }
     
