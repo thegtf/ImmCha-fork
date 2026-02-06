@@ -105,44 +105,53 @@ public class CheeseFinder extends BabyRat {
 
         if (rc.canSenseLocation(kingLoc) && (kingLoc.distanceSquaredTo(here) <= 4 )) {
 
-            RobotInfo[] kingLocations = rc.senseNearbyRobots(kingLoc, 8, rc.getTeam());
+            RobotInfo[] nearbyRobots = rc.senseNearbyRobots(kingLoc, 8, rc.getTeam());
 
-            for (RobotInfo robotInfo : kingLocations) {
+            for (RobotInfo robotInfo : nearbyRobots) {
+                if (robotInfo.getTeam() != rc.getTeam()) {
+                    continue;
+                }
                 if (robotInfo.getType().isRatKingType()) {
                     MapLocation actualKingLoc = robotInfo.getLocation();
                     boolean result = rc.canTransferCheese(actualKingLoc, rawCheese);
                     rc.setIndicatorString("Can transfer " + rawCheese + " to king at " + actualKingLoc.toString() + "? " + result);
                     if (result) {
                         rc.transferCheese(actualKingLoc, rawCheese);
-                        currentState = State.FIND_CHEESE;
-                    } else {
-                        // Return to finding cheese, try to randomly come back to king another way
-                        currentState = State.FIND_CHEESE;
                     }
                     break;
                 } else {
                     // we found another baby rat, squeak or read squeaks,
                     // based on whether we have a mine location to go to
-                    if (mineLoc != null) {
-                        int msgBytes = getSqueak(SqueakType.CHEESE_MINE, toInteger(mineLoc));
-                        rc.squeak(msgBytes);
-                        System.out.println("From " + here.toString() + " Sent a squeak " + msgBytes + " for mine at " + mineLoc.toString());
-                        // go back to finding cheese mode
-                    } else {
-                        Message[] squeakMessages = rc.readSqueaks(rc.getRoundNum());
 
-                        for (Message m : squeakMessages) {
-                            int msg = m.getBytes();
-                            if (getSqueakType(msg) == SqueakType.CHEESE_MINE) {
-                                int encodedLoc = getSqueakValue(msg);
-                                mineLoc = new MapLocation(getX(encodedLoc), getY(encodedLoc));
-                                System.out.println("Received cheese mine " + mineLoc.toString());
+
+                    if (mineLoc != null) {
+                        int msgByte = getSqueak(SqueakType.CHEESE_MINE, toInteger(mineLoc));
+                        rc.squeak(msgByte);
+                        System.out.println("From " + here.toString() + " Sent a squeak " + msgByte + " for mine at " + mineLoc.toString());
+                        // go back to finding cheese mode
+                        // if we have squeaked to at least one other baby rat
+                        currentState = State.FIND_CHEESE;
+                    } else {
+                        boolean receivedMineLoc = false;
+                        while (!receivedMineLoc) {
+                            Message[] squeakMessages = rc.readSqueaks(rc.getRoundNum());
+
+                            for (Message m : squeakMessages) {
+                                int msg = m.getBytes();
+                                if (getSqueakType(msg) == SqueakType.CHEESE_MINE) {
+                                    int encodedLoc = getSqueakValue(msg);
+                                    mineLoc = new MapLocation(getX(encodedLoc), getY(encodedLoc));
+                                    System.out.println("Received cheese mine " + mineLoc.toString());
+                                    receivedMineLoc = true;
+                                    // return to cheese finding
+                                    // if we received a squeak telling us about a mine
+                                    currentState = State.FIND_CHEESE;
+                                    break;
+                                }
                             }
+
                         }
                     }
-                    // whether we already have a mine location or just received one
-                    // go back to mining cheese
-                    currentState = State.FIND_CHEESE;
                 }
             }
 
