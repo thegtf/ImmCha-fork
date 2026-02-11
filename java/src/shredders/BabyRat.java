@@ -17,19 +17,27 @@ public abstract class BabyRat extends RobotSubPlayer {
     }
 
     public BabyRat(RobotController rc) {
-        super(rc);
+        super(rc); }
         // Save the location of the king who spawned us
-        kingLoc = rc.getLocation();
+     public void updateKingLocFromShared() throws GameActionException {
+    int kx = rc.readSharedArray(1); // SA_KING_X
+    int ky = rc.readSharedArray(2); // SA_KING_Y
+    if (!(kx == 0 && ky == 0)) {
+        kingLoc = new MapLocation(kx, ky);
     }
+}
+
 
     public static BabyRat createToggle(RobotController rc) throws GameActionException {
         int numRats = rc.readSharedArray(0);
-        int r = rc.getID() % 10;
-
-        if (r == 0) return new KingBuilder(rc);      // 10%
-        if (r <= 6) return new CheeseFinder(rc);     // 60%
-        return new Attacker(rc);                     // 30%
+        if ((rc.getID() % 7) == 0) {
+            return new KingBuilder(rc);
+        } else if (rc.getID() % 4 != 0) {
+            return new CheeseFinder(rc);
+        } else {
+            return new Attacker(rc);
         }
+    }
 
     public static int getSqueak(SqueakType type, int value) {
         switch (type) {

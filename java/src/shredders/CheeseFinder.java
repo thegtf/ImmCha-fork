@@ -10,11 +10,11 @@ public class CheeseFinder extends BabyRat {
         RETURN_TO_KING,
     }
 
-    public static State currentState;
-    public static MapLocation mineLoc = null;
+    public State currentState;
+    public MapLocation mineLoc = null;
     public static int numMines = 0;
     public static ArrayList<Integer> mineLocs = new ArrayList<>();
-    static MapLocation lastPathTarget = null;
+    public MapLocation lastPathTarget = null;
     public final PathFinding pf = new PathFinding();
 
     public CheeseFinder(RobotController rc) {
@@ -24,6 +24,12 @@ public class CheeseFinder extends BabyRat {
     }
 
     public void doAction() throws GameActionException {
+        //updateKingLocFromShared
+        int kx = rc.readSharedArray(1);
+        int ky = rc.readSharedArray(2);
+        if (!(kx == 0 && ky == 0)) {
+            kingLoc = new MapLocation(kx, ky);
+    }
         switch (currentState) {
             case FIND_CHEESE:
                 runFindCheese();
@@ -94,8 +100,13 @@ public class CheeseFinder extends BabyRat {
     public void runReturnToKing() throws GameActionException {
         MapLocation here = rc.getLocation();
         Direction toKing = here.directionTo(kingLoc);
-        MapLocation nextLoc = here.add(toKing);
         int rawCheese = rc.getRawCheese();
+
+        if (kingLoc == null) {
+            //no beacon yet, return to FIND_CHEESE
+            currentState = State.FIND_CHEESE;
+            return;
+        }
 
         if (rc.canTurn(toKing)) {
             rc.turn(toKing);

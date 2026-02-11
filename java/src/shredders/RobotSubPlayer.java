@@ -5,7 +5,18 @@ import java.util.Random;
 import battlecode.common.*;
 
 public abstract class RobotSubPlayer {
-    static Direction[] directions = Direction.values();
+
+static final Direction[] directions = {
+    Direction.NORTH,
+    Direction.NORTHEAST,
+    Direction.EAST,
+    Direction.SOUTHEAST,
+    Direction.SOUTH,
+    Direction.SOUTHWEST,
+    Direction.WEST,
+    Direction.NORTHWEST
+};
+
     static final Random rand = new Random(6147);
     static Direction d = null;
 
@@ -22,19 +33,30 @@ public abstract class RobotSubPlayer {
     public static void moveRandom(RobotController rc) throws GameActionException {
 
         if (d == null) {
-            d = directions[rand.nextInt(directions.length-1)];
+            d = directions[rand.nextInt(directions.length)];
         }
+        if (rc.canTurn(d)) {
+            rc.turn(d);
 
         if (rc.canMoveForward()) {
             rc.moveForward();
-        } else {
-            d = directions[rand.nextInt(directions.length-1)];
-            if (rc.canTurn()) {
-                rc.turn(d);
+            return;
             }
+                Direction tryDir = d;
+    for (int i = 0; i < 8; i++) {
+        tryDir = tryDir.rotateLeft();
+        if (rc.canTurn(tryDir)) rc.turn(tryDir);
+        if (rc.canMoveForward()) {
+            rc.moveForward();
+            d = tryDir;
+            return;
         }
-
     }
+
+    // Fully stuck — re-roll for next turn
+    d = directions[rand.nextInt(directions.length)];
+    }
+}
 
     
     // public void writeRatKingCount(int ratKingCount) throws GameActionException {
