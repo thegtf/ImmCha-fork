@@ -15,9 +15,9 @@ public class Attacker extends BabyRat {
         System.out.println("Sensed " + nearbyInfos.length + " robots");
         MapLocation enemyLoc = null;
         for (RobotInfo info : nearbyInfos) {
-            if (info.getType().isCatType() || info.getType().isBabyRatType() || info.getType().isRatKingType() ) {
-                Direction toEnemy = rc.getLocation().directionTo(enemyLoc);
-                enemyLoc = info.getLocation();                
+            if (info.getTeam() != rc.getTeam() && (info.getType().isCatType() || info.getType().isRatKingType())) {
+                enemyLoc = info.getLocation();  
+                Direction toEnemy = rc.getLocation().directionTo(enemyLoc);              
                 if (rc.canTurn(toEnemy)) {
                     rc.turn(toEnemy);
                     break;
@@ -35,12 +35,17 @@ public class Attacker extends BabyRat {
             rc.moveForward();
             rc.setIndicatorString("Finding cat.");
         } else {
-            d = directions[rand.nextInt(directions.length-1)];
-            if (rc.canTurn()) {
-                rc.turn(d);
+            Direction left = rc.getDirection().rotateLeft();
+            Direction right = rc.getDirection().rotateRight();
+            if (rc.canMove(right)) {
+                rc.move(right);
+            } else if (rc.canMove(left)) {
+                rc.move(left);
+            } else {
+                d = directions[rand.nextInt(directions.length - 1)];
+                if (rc.canTurn(d)) 
+                    rc. turn(d);
             }
-            rc.setIndicatorString("Blocked while finding cat, turning " + d.toString());
-            return;
         }
 
         if ((enemyLoc != null) && rc.canAttack(enemyLoc)) {

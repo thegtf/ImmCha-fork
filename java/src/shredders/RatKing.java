@@ -4,6 +4,8 @@ import battlecode.common.*;
 
 public class RatKing extends RobotSubPlayer {
 
+    public final PathFinding pf = new PathFinding();
+
     // Shared array slots (used ONLY here + KingBuilder)
     private static final int SA_NUM_SPAWNED = 0;
     private static final int SA_KING_X = 1;

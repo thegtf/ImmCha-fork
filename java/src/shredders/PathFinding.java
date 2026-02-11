@@ -5,19 +5,19 @@ import battlecode.common.*;
 public class PathFinding {
 
 
-    public static enum PathState {
+    public enum PathState {
         FOLLOW_WALL,
         MOVE_TO_TARGET,
     }
 
-    public static PathState ps = PathState.MOVE_TO_TARGET;
+    public PathState ps = PathState.MOVE_TO_TARGET;
 
-    static int bestDist;
-    static MapLocation target = null;
-    static Direction lastWallDir = null;
-    static int startBugDist = Integer.MAX_VALUE;
+    public int bestDist;
+    public MapLocation target = null;
+    public Direction lastWallDir = null;
+    public int startBugDist = Integer.MAX_VALUE;
 
-    public static void moveToTarget(RobotController rc, MapLocation target, MapLocation curr) throws GameActionException {
+    public void moveToTarget(RobotController rc, MapLocation target, MapLocation curr) throws GameActionException {
         
         if (target == null) {
             return; 
@@ -42,7 +42,7 @@ public class PathFinding {
     }
 
 
-    public static void followWall(RobotController rc, MapLocation target, MapLocation curr) throws GameActionException {
+    public void followWall(RobotController rc, MapLocation target, MapLocation curr) throws GameActionException {
             Direction dir;
             
             if (lastWallDir != null) {
@@ -70,7 +70,7 @@ public class PathFinding {
                 }
             }
 
-                public static void reset() {
+                public void reset() {
                     ps = PathState.MOVE_TO_TARGET;
                     bestDist = Integer.MAX_VALUE;
                     target = null;

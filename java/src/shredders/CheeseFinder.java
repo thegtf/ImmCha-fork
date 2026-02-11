@@ -15,11 +15,11 @@ public class CheeseFinder extends BabyRat {
     public static int numMines = 0;
     public static ArrayList<Integer> mineLocs = new ArrayList<>();
     static MapLocation lastPathTarget = null;
+    public final PathFinding pf = new PathFinding();
 
     public CheeseFinder(RobotController rc) {
         super(rc);
-        int rawCheese = rc.getRawCheese();
-        if (rawCheese == 0) currentState = State.FIND_CHEESE;
+        currentState = State.FIND_CHEESE;
         rc.setIndicatorString("Cheesefinder reporting for duty");
     }
 
@@ -57,41 +57,25 @@ public class CheeseFinder extends BabyRat {
                             newCheeseMine = loc;
                             mineLoc = loc;
                             System.out.println("Found a new cheese mine at " + loc);
+                            rc.setIndicatorString("Found a cheese mine at " + loc.toString());
                         }
                     }
-                
-                if (info.hasCheeseMine()) {
-                    MapLocation m = info.getMapLocation();
-                    int encMine = toInteger(m);
-
-                    if (!mineLocs.contains(encMine)) {
-                        mineLocs.add(encMine);
-                        newCheeseMine = m;
-                        mineLoc = m;
-                    }
-                    System.out.println("Found a cheese mine at " + m.toString());
-                    rc.setIndicatorString("Found a cheese mine at " + m.toString());
                 }
-                if (rc.canRemoveDirt(loc)) {
-                    rc.removeDirt(loc);
-                    return;
-                }
-            }
 
             if (cheeseLoc != null) {
                 if (lastPathTarget == null || !lastPathTarget.equals(cheeseLoc)) {
-                    PathFinding.reset();
+                    pf.reset();
                     lastPathTarget = cheeseLoc;
                 }
-                PathFinding.moveToTarget(rc, cheeseLoc, rc.getLocation());
+                pf.moveToTarget(rc, cheeseLoc, rc.getLocation());
                 rc.setIndicatorString("finding cheese" + cheeseLoc);
                 // no visible cheese, go to known mineLoc
-            } else if (mineLoc != null) {
-                if (lastPathTarget == null || !lastPathTarget.equals(mineLoc)) {
-                    PathFinding.reset();
+            } else if (newCheeseMine != null) {
+                if (lastPathTarget == null || !lastPathTarget.equals(newCheeseMine)) {
+                    pf.reset();
                     lastPathTarget = newCheeseMine;
                 }
-                PathFinding.moveToTarget(rc, mineLoc, rc.getLocation());
+                pf.moveToTarget(rc, newCheeseMine, rc.getLocation());
                 rc.setIndicatorString("finding cheese mine at " + mineLoc.toString());
             } else {
                 // no visible cheese or known mine, keep wandering
@@ -106,8 +90,6 @@ public class CheeseFinder extends BabyRat {
             rc.setIndicatorString("Returning to king.");
         }
     }
-
-
 
     public void runReturnToKing() throws GameActionException {
         MapLocation here = rc.getLocation();
@@ -129,12 +111,15 @@ public class CheeseFinder extends BabyRat {
                 }
                 if (robotInfo.getType().isRatKingType()) {
                     MapLocation actualKingLoc = robotInfo.getLocation();
-                    boolean result = rc.canTransferCheese(actualKingLoc, rawCheese);
+                    boolean result = (rawCheese > 0) && rc.canTransferCheese(actualKingLoc, rawCheese);
                     rc.setIndicatorString("Can transfer " + rawCheese + " to king at " + actualKingLoc.toString() + "? " + result);
                     if (result) {
                         rc.transferCheese(actualKingLoc, rawCheese);
+                        currentState = State.FIND_CHEESE;
+                        pf.reset();
+                        lastPathTarget = null;
+                        return;
                     }
-                    break;
                 } else {
                     // we found another baby rat, squeak or read squeaks,
                     // based on whether we have a mine location to go to
@@ -147,7 +132,6 @@ public class CheeseFinder extends BabyRat {
                         // go back to finding cheese mode
                         // if we have squeaked to at least one other baby rat
                         currentState = State.FIND_CHEESE;
-                        break;
                     } else {
                             Message[] squeakMessages = rc.readSqueaks(rc.getRoundNum());
 
@@ -169,19 +153,17 @@ public class CheeseFinder extends BabyRat {
                 }
             }
 
-        if (rc.canRemoveDirt(nextLoc)) {
-            rc.removeDirt(nextLoc);
-            return;
-        }
         if (rc.canMove(toKing)) {
             rc.move(toKing);
-        } else if (rc.canMoveForward()) {
-            rc.moveForward();
         } else {
-            RobotSubPlayer.moveRandom(rc);
-}
-        if (rawCheese == 0) {
-            currentState = State.FIND_CHEESE;
+            Direction left = toKing.rotateLeft();
+            Direction right = toKing.rotateRight();
+            if (rc.canMove(left)) rc.move(left);
+            else if (rc.canMove(right)) rc.move(right);
+            else RobotSubPlayer.moveRandom(rc);
+        }
+                if (rawCheese == 0) {
+                    currentState = State.FIND_CHEESE;
         }
     }
 }

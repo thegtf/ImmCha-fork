@@ -4,6 +4,8 @@ import battlecode.common.*;
 
 public class KingBuilder extends BabyRat {
 
+    public final PathFinding pf = new PathFinding();
+
     // Must match RatKing.java
     private static final int SA_KING_X = 1;
     private static final int SA_KING_Y = 2;
@@ -45,7 +47,7 @@ public class KingBuilder extends BabyRat {
                 return;
             }
             if (king != null) {
-                PathFinding.moveToTarget(rc, king, rc.getLocation());
+                pf.moveToTarget(rc, king, rc.getLocation());
                 rc.setIndicatorString("KB: returning w/cheese");
             } else {
                 moveRandom(rc);
@@ -77,7 +79,7 @@ public class KingBuilder extends BabyRat {
 
         // Move to site
         if (d2 > 0) {
-            PathFinding.moveToTarget(rc, site, rc.getLocation());
+            pf.moveToTarget(rc, site, rc.getLocation());
             rc.setIndicatorString("KB: packing -> " + site);
             return;
         }
