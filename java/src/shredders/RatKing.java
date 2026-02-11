@@ -3,6 +3,7 @@ package shredders;
 import battlecode.common.*;
 
 public class RatKing extends RobotSubPlayer{
+    static MapLocation KingTargetMine = null;
         public RatKing(RobotController rc) {
         super(rc);
         //TODO Auto-generated constructor stub
@@ -29,9 +30,8 @@ public class RatKing extends RobotSubPlayer{
             }
         }
 
-        // moveRandom(rc);
-     RatKing.moveRandom(rc);
-     rc.setIndicatorString("repositioning Rat King");
+    RatKing.moveRandom(rc);
+    rc.setIndicatorString("repositioning Rat King");
 
     }
     

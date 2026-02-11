@@ -39,61 +39,65 @@ public class CheeseFinder extends BabyRat {
         // search for cheese
         MapInfo[] nearbyInfos = rc.senseNearbyMapInfos();
         MapLocation cheeseLoc = null;
+        MapLocation newCheeseMine = null;
 
-        if (mineLoc == null) {
-            // We don't know of a cheese mine yet, 
-            // keep sensing
             System.out.println("Sensed " + nearbyInfos.length + " tiles");
+
             for (MapInfo info : nearbyInfos) {
                 MapLocation loc = info.getMapLocation();
-                if (info.getCheeseAmount() > 0) {
-                    Direction toCheese = rc.getLocation().directionTo(loc);
 
-                    if (rc.canTurn(toCheese)) {
-                        rc.turn(toCheese);
-                        cheeseLoc = info.getMapLocation();
-                        break;
-                    }
+                if (info.getCheeseAmount() > 0 && cheeseLoc == null) {
+                    cheeseLoc = loc;
                 }
+
+                    if (info.hasCheeseMine()) {
+                        int encMine = toInteger(loc);
+                        if (!mineLocs.contains(encMine)) {
+                            mineLocs.add(encMine);
+                            newCheeseMine = loc;
+                            mineLoc = loc;
+                            System.out.println("Found a new cheese mine at " + loc);
+                        }
+                    }
+                
                 if (info.hasCheeseMine()) {
-                    mineLoc = info.getMapLocation();
-                    System.out.println("Found a cheese mine at " + mineLoc.toString());
-                    rc.setIndicatorString("Found a cheese mine at " + mineLoc.toString());
+                    MapLocation m = info.getMapLocation();
+                    int encMine = toInteger(m);
+
+                    if (!mineLocs.contains(encMine)) {
+                        mineLocs.add(encMine);
+                        newCheeseMine = m;
+                        mineLoc = m;
+                    }
+                    System.out.println("Found a cheese mine at " + m.toString());
+                    rc.setIndicatorString("Found a cheese mine at " + m.toString());
                 }
                 if (rc.canRemoveDirt(loc)) {
                     rc.removeDirt(loc);
+                    return;
                 }
             }
-        } else { 
-            // We know of a cheese mine
-            System.out.println("Going straight to cheese mine at " + mineLoc.toString());
-            Direction toMine = rc.getLocation().directionTo(mineLoc);
-            if (rc.canTurn(toMine)) {
-                rc.turn(toMine);
-            }
-        }
 
-
-        if (cheeseLoc != null) {
-            if (lastPathTarget == null || !lastPathTarget.equals(cheeseLoc)) {
-                PathFinding.reset();
-                lastPathTarget = cheeseLoc;
-            }
-            PathFinding.moveToTarget(rc, cheeseLoc, rc.getLocation());
-            rc.setIndicatorString("finding cheese" + cheeseLoc);
-            // no visible cheese, go to known mineLoc
-        } else if (mineLoc != null) {
-            if (lastPathTarget == null || !lastPathTarget.equals(mineLoc)) {
-                PathFinding.reset();
-                lastPathTarget = mineLoc;
-            }
-            PathFinding.moveToTarget(rc, mineLoc, rc.getLocation());
+            if (cheeseLoc != null) {
+                if (lastPathTarget == null || !lastPathTarget.equals(cheeseLoc)) {
+                    PathFinding.reset();
+                    lastPathTarget = cheeseLoc;
+                }
+                PathFinding.moveToTarget(rc, cheeseLoc, rc.getLocation());
+                rc.setIndicatorString("finding cheese" + cheeseLoc);
+                // no visible cheese, go to known mineLoc
+            } else if (mineLoc != null) {
+                if (lastPathTarget == null || !lastPathTarget.equals(mineLoc)) {
+                    PathFinding.reset();
+                    lastPathTarget = newCheeseMine;
+                }
+                PathFinding.moveToTarget(rc, mineLoc, rc.getLocation());
                 rc.setIndicatorString("finding cheese mine at " + mineLoc.toString());
-        } else {
-            // no visible cheese or known mine, keep wandering
-            RobotSubPlayer.moveRandom(rc);
-             rc.setIndicatorString("wandering for cheese");
-        }
+            } else {
+                // no visible cheese or known mine, keep wandering
+                RobotSubPlayer.moveRandom(rc);
+                rc.setIndicatorString("wandering for cheese");
+            }
 
 
         if ((cheeseLoc != null) && rc.canPickUpCheese(cheeseLoc)) {
@@ -102,6 +106,7 @@ public class CheeseFinder extends BabyRat {
             rc.setIndicatorString("Returning to king.");
         }
     }
+
 
 
     public void runReturnToKing() throws GameActionException {
