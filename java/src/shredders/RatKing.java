@@ -30,6 +30,8 @@ public class RatKing extends RobotSubPlayer{
         }
 
         // moveRandom(rc);
+     RatKing.moveRandom(rc);
+     rc.setIndicatorString("repositioning Rat King");
 
     }
     
