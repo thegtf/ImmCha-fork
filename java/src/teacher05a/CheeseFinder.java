@@ -44,9 +44,9 @@ public class CheeseFinder extends BabyRat {
         MapLocation cheeseLoc = null;
         MapLocation here = rc.getLocation();
 
-        if (mineLoc == null) {
-            // We don't know of a cheese mine yet, 
-            // keep sensing
+        if ((mineLoc == null) || (mineLoc.distanceSquaredTo(here) < 25)) {
+            // If we don't know of a cheese mine yet, or we're close enough
+            // just sense for cheese and pick them up
             for (MapInfo info : nearbyInfos) {
                 MapLocation loc = info.getMapLocation();
                 if (info.getCheeseAmount() > 0) {
@@ -63,12 +63,9 @@ public class CheeseFinder extends BabyRat {
                     System.out.println("Found a cheese mine at " + mineLoc.toString());
                     rc.setIndicatorString("Found a cheese mine at " + mineLoc.toString());
                 }
-                if (rc.canRemoveDirt(loc)) {
-                    rc.removeDirt(loc);
-                }
             }
-        } else if (mineLoc.distanceSquaredTo(here) >= 9) {
-            // We know of a cheese mine, get closer if we are too far away
+        } else {
+            // We know of a cheese mine, get closer because we are too far away
             System.out.println("Going straight to cheese mine at " + mineLoc.toString());
             Direction toMine = rc.getLocation().directionTo(mineLoc);
             if (rc.canTurn(toMine)) {
@@ -76,6 +73,10 @@ public class CheeseFinder extends BabyRat {
             }
         }
 
+        MapLocation forward = here.add(rc.getDirection());
+        if (rc.canRemoveDirt(forward)) {
+            rc.removeDirt(forward);
+        }
 
         if (rc.canMoveForward()) {
             rc.moveForward();
@@ -108,7 +109,7 @@ public class CheeseFinder extends BabyRat {
             rc.turn(toKing);
         }
 
-        if (rc.canSenseLocation(kingLoc) && (kingLoc.distanceSquaredTo(here) <= 9 )) {
+        if (rc.canSenseLocation(kingLoc) && (kingLoc.distanceSquaredTo(here) <= 16 )) {
 
             RobotInfo[] nearbyRobots = rc.senseNearbyRobots(kingLoc, 8, rc.getTeam());
 
@@ -170,11 +171,18 @@ public class CheeseFinder extends BabyRat {
             rc.moveForward();
             rc.setIndicatorString("Returning to king.");
         } else {
-            gettingUnstuck = true;
-            d = directions[rand.nextInt(directions.length-1)];
-            if (rc.canTurn()) {
-                rc.turn(d);
+            // Toggle getting unstuck; we proceed in a straight line
+            // after getting unstuck until the next time we hit an
+            // obstacle, then we go straight back to king again
+            // hopefully from a different direction.
+            gettingUnstuck = !gettingUnstuck;
+            while (!rc.canMoveForward()) {
+                d = directions[rand.nextInt(directions.length-1)];
+                if (rc.canTurn()) {
+                    rc.turn(d);
+                }
             }
+            rc.moveForward();
             rc.setIndicatorString("Blocked while returning to king, turning " + d.toString());
             return;
         }
