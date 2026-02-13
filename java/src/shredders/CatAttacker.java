@@ -12,7 +12,6 @@ public class CatAttacker extends BabyRat {
         // search for cheese
         RobotInfo[] nearbyInfos = rc.senseNearbyRobots();
 
-        System.out.println("Sensed " + nearbyInfos.length + " robots");
         MapLocation catLoc = null;
         for (RobotInfo info : nearbyInfos) {
             if (info.getType().isCatType()) {

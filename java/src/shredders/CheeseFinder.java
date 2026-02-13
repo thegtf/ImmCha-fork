@@ -45,8 +45,6 @@ public class CheeseFinder extends BabyRat {
         MapLocation cheeseLoc = null;
         MapLocation newCheeseMine = null;
 
-            System.out.println("Sensed " + nearbyInfos.length + " tiles");
-
             for (MapInfo info : nearbyInfos) {
                 MapLocation loc = info.getMapLocation();
 

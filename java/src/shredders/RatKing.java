@@ -18,12 +18,12 @@ public class RatKing extends RobotSubPlayer {
     private static final int BANK_STOP  = 60;
 
     // Hard brakes on rat production
-    private static final int MAX_SPAWNS_BEFORE_2K = 18; // tune down to reduce babies (e.g., 14–20)
+    private static final int MAX_SPAWNS_BEFORE_2K = 22; // tune down to reduce babies (e.g., 14–20)
     private static final int LOCAL_BABY_CAP = 12;       // max babies near the king before we stop spawning
     private static final int COST_CEILING = 40;         // stop spawning once spawn cost gets too high
 
     // Reserves (you already have these names—keeping them)
-    private static final int RESERVE_1K = 60;           // reserve cheese to reduce endgame bleed
+    private static final int RESERVE_1K = 80;           // reserve cheese to reduce endgame bleed
     private static final int RESERVE_2K = 90;           // kept for later, not used without king-count API
 
     // Endgame conservation: after this round, do not spawn unless very rich.
@@ -74,7 +74,7 @@ public class RatKing extends RobotSubPlayer {
         boolean bankPromo = (global >= BANK_START && global < BANK_STOP);
 
         // 6) Endgame conservation: stop spawning late game unless very rich
-        boolean endgameFreeze = (rc.getRoundNum() >= ENDGAME_ROUND);
+        boolean endgameFreeze = (rc.getRoundNum() >= ENDGAME_ROUND && global < ENDGAME_MIN_BANK_TO_SPAWN);
 
         // 7) Hard spawn caps
         int spawnedSoFar = rc.readSharedArray(SA_NUM_SPAWNED);
@@ -85,7 +85,7 @@ public class RatKing extends RobotSubPlayer {
         boolean spawnAllowed =
                 !bankPromo &&
                 !endgameFreeze &&
-                spawnedSoFar < MAX_SPAWNS_BEFORE_2K &&
+                (spawnedSoFar < MAX_SPAWNS_BEFORE_2K || cost <= 20) &&
                 localBabies < LOCAL_BABY_CAP &&
                 cost <= COST_CEILING &&
                 global >= (cost + reserve);

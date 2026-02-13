@@ -12,7 +12,6 @@ public class Attacker extends BabyRat {
         // search for cheese
         RobotInfo[] nearbyInfos = rc.senseNearbyRobots();
 
-        System.out.println("Sensed " + nearbyInfos.length + " robots");
         MapLocation enemyLoc = null;
         for (RobotInfo info : nearbyInfos) {
             if (info.getTeam() != rc.getTeam() && (info.getType().isCatType() || info.getType().isRatKingType())) {
