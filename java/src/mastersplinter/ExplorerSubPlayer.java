@@ -1,75 +1,63 @@
 package mastersplinter;
 
 import battlecode.common.*;
-import java.util.ArrayList;
 
 public class ExplorerSubPlayer extends RobotSubPlayer {
 
-    // Local cache per-robot (instance, not static)
     private MapLocation lastMineSeen = null;
 
-    // Shared (global) mine bookkeeping stays in RobotPlayer (static), but we can also just squeak and let king store.
     public ExplorerSubPlayer(RobotController rc) {
         super(rc);
     }
 
     @Override
     public void step() throws GameActionException {
-        // Pick up adjacent cheese if possible
-        for (Direction dir : directions) {
-            MapLocation loc = rc.getLocation().add(dir);
-            if (rc.canPickUpCheese(loc)) {
-                rc.pickUpCheese(loc);
-                rc.setIndicatorString("EXPLORER picked cheese");
-                break;
-            }
-        }
-
-        // Sense mines / cheese
+        // sense mines + nearby cheese
         MapInfo[] infos = rc.senseNearbyMapInfos();
         MapLocation cheeseLoc = null;
 
         for (MapInfo info : infos) {
-            if (info.hasCheeseMine()) {
-                lastMineSeen = info.getMapLocation();
-            }
-            if (info.getCheeseAmount() > 0 && cheeseLoc == null) {
-                cheeseLoc = info.getMapLocation();
-            }
+            if (info.hasCheeseMine()) lastMineSeen = info.getMapLocation();
+            if (cheeseLoc == null && info.getCheeseAmount() > 0) cheeseLoc = info.getMapLocation();
         }
 
-        if (rc.getRawCheese() > 0) {
-    // Try transfer first (most important)
-    if (deliverToNearestVisibleKing()) {
-        rc.setIndicatorString("EXPLORER delivered; back out");
-        return;
-    }
-    // If no king in range, move toward beacon
-    MapLocation beacon = readKingBeacon();
-    if (beacon != null) Pathfinder.stepToward(rc, beacon);
-    squeakMineIfAny();
-    return;
-}
+        // pick up adjacent cheese
+        for (Direction dir : directions) {
+            MapLocation loc = rc.getLocation().add(dir);
+            if (rc.canPickUpCheese(loc)) { rc.pickUpCheese(loc); break; }
+        }
 
-        // If we see cheese, orient toward it
-        if (cheeseLoc != null) {
-            Direction to = rc.getLocation().directionTo(cheeseLoc);
-            if (rc.canTurn(to)) rc.turn(to);
-            if (rc.canMoveForward()) rc.moveForward();
-            rc.setIndicatorString("EXPLORER -> cheese");
+        // if carrying, deliver
+        if (rc.getRawCheese() > 0) {
+            if (deliverToNearestVisibleKing()) {
+                squeakMineIfAny();
+                rc.setIndicatorString("EXP: delivered");
+                return;
+            }
+            MapLocation beacon = kingBeacon();
+            if (beacon != null) Pathfinder.stepToward(rc, beacon);
             squeakMineIfAny();
+            rc.setIndicatorString("EXP: to beacon w/cheese");
             return;
         }
 
-        // Otherwise wander
-        moveWanderWithDig();
-        rc.setIndicatorString("EXPLORER wandering");
+        // if see cheese, go to it
+        if (cheeseLoc != null) {
+            Pathfinder.stepToward(rc, cheeseLoc);
+            squeakMineIfAny();
+            rc.setIndicatorString("EXP: to cheese");
+            return;
+        }
+
+        // wander
+        wanderWithDig();
         squeakMineIfAny();
+        rc.setIndicatorString("EXP: wander");
     }
 
     private void squeakMineIfAny() throws GameActionException {
-    if (lastMineSeen == null) return;
-    Comms.squeakMine(rc, lastMineSeen);
-    lastMineSeen = null;
-}
+        if (lastMineSeen == null) return;
+        Comms.squeakMine(rc, lastMineSeen);
+        lastMineSeen = null;
+    }
 }

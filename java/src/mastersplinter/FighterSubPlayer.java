@@ -8,90 +8,61 @@ public class FighterSubPlayer extends RobotSubPlayer {
 
     @Override
     public void step() throws GameActionException {
-        // Sense threats
+        MapLocation beacon = kingBeacon();
+
         RobotInfo[] cats = rc.senseNearbyRobots(rc.getType().getVisionRadiusSquared(), Team.NEUTRAL);
         RobotInfo[] enemies = rc.senseNearbyRobots(rc.getType().getVisionRadiusSquared(), rc.getTeam().opponent());
-        MapLocation beacon = readKingBeacon();
 
-        // Comms: enemy count
-        if (enemies.length > 0) {
-            Comms.squeakEnemyCount(rc, enemies.length);
+        if (enemies.length > 0) Comms.squeakEnemyCount(rc, enemies.length);
+
+        // if carrying cheese, deliver first (stability)
+        if (rc.getRawCheese() > 0) {
+            if (!deliverToNearestVisibleKing()) {
+                if (beacon != null) Pathfinder.stepToward(rc, beacon);
+                else wanderWithDig();
+            }
+            rc.setIndicatorString("FTR: delivered/return");
+            return;
         }
 
-        // If cat is close: run away hard
+        // cat behavior
         if (cats.length > 0) {
             MapLocation catLoc = cats[0].getLocation();
             int d2 = rc.getLocation().distanceSquaredTo(catLoc);
+
             Direction away = rc.getLocation().directionTo(catLoc).opposite();
+            if (d2 >= 10) Comms.squeakCatDir(rc, rc.getLocation().directionTo(catLoc));
 
-// Guard the king: stay within ~8 tiles of beacon so we can intercept cats/enemies near king.
-if (beacon != null) {
-    int d2Beacon = rc.getLocation().distanceSquaredTo(beacon);
-
-    // If too far, move toward beacon (digging if needed)
-    if (d2 > 64) {
-        Pathfinder.stepToward(rc, beacon);
-        rc.setIndicatorString("FIGHTER: returning to guard king");
-        return;
-    }
-
-    // If carrying cheese, deliver while guarding
-    if (rc.getRawCheese() > 0) {
-        if (!deliverToNearestVisibleKing()) {
-            Pathfinder.stepToward(rc, beacon);
-        }
-        rc.setIndicatorString("FIGHTER: delivered while guarding");
-        return;
-    }
-}
-
-            // Comms: cat direction (only if not right on top of us)
-            if (d2 >= 10) {
-                Comms.squeakCatDir(rc, rc.getLocation().directionTo(catLoc));
-            }
-
-            // Place traps if possible (prefer cat traps)
+            // trap placement (cheap)
             for (Direction dir : directions) {
                 MapLocation t = rc.getLocation().add(dir);
                 if (rc.canPlaceCatTrap(t)) { rc.placeCatTrap(t); break; }
                 if (rc.canPlaceRatTrap(t)) { rc.placeRatTrap(t); break; }
             }
 
-            // Move away (with dig)
             Pathfinder.tryMoveOrDig(rc, away);
-            rc.setIndicatorString("FIGHTER: cat nearby, evading + trapping");
+            rc.setIndicatorString("FTR: evade cat");
             return;
         }
 
-        // If enemies nearby: attack adjacent squares
+        // attack adjacent if possible
         for (Direction dir : directions) {
             MapLocation loc = rc.getLocation().add(dir);
-            if (rc.canAttack(loc)) {
-                rc.attack(loc);
-                rc.setIndicatorString("FIGHTER: attacked");
-                break;
+            if (rc.canAttack(loc)) { rc.attack(loc); break; }
+        }
+
+        // guard near beacon if we have one
+        if (beacon != null) {
+            int d2 = rc.getLocation().distanceSquaredTo(beacon);
+            if (d2 > 100) {
+                Pathfinder.stepToward(rc, beacon);
+                rc.setIndicatorString("FTR: return guard");
+                return;
             }
         }
 
-        // Rat carry/throw micro (cheap)
-        if (rc.canThrowRat()) rc.throwRat();
-        for (Direction dir : directions) {
-            MapLocation loc = rc.getLocation().add(dir);
-            if (rc.canCarryRat(loc)) {
-                rc.carryRat(loc);
-                break;
-            }
-        }
-
-        // Still contribute to economy if empty
-        if (rc.getRawCheese() > 0) {
-            beacon = readKingBeacon();
-            if (beacon != null) Pathfinder.stepToward(rc, beacon);
-            return;
-        }
-
-        // Default: patrol/wander
-        moveWanderWithDig();
-        rc.setIndicatorString("FIGHTER: patrolling");
+        // roam/patrol
+        wanderWithDig();
+        rc.setIndicatorString("FTR: patrol");
     }
 }
