@@ -22,11 +22,11 @@ public abstract class RobotSubPlayer {
     // then turn to a new direction
     public void moveRandom(RobotController rc) throws GameActionException {
 
-        if (d == null) {
+         if (d == null) {
             d = directions[rand.nextInt(directions.length-1)];
         }
 
-        if (rc.canMoveForward()) {
+         if (rc.canMoveForward()) {
             rc.moveForward();
         } else {
             d = directions[rand.nextInt(directions.length-1)];

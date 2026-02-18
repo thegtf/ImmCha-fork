@@ -16,7 +16,7 @@ public class RatKing extends RobotSubPlayer {
         int currentCost = rc.getCurrentRatCost();
 
         MapLocation[] potentialSpawnLocations = rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), 8);
-        boolean spawn = currentCost <= 10 || rc.getAllCheese() > currentCost + 2500;
+        boolean spawn = currentCost <= 20 || rc.getAllCheese() > currentCost + 2500;
 
         for (MapLocation loc : potentialSpawnLocations) {
             if (spawn && rc.canBuildRat(loc)) {

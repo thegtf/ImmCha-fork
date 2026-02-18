@@ -19,6 +19,7 @@ public abstract class BabyRat extends RobotSubPlayer {
     public BabyRat(RobotController rc) {
         super(rc);
         // Save the location of the king who spawned us
+        
         kingLoc = rc.getLocation();
     }
 
