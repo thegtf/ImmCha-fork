@@ -16,7 +16,8 @@ public class CatAttacker extends BabyRat {
         for (RobotInfo info : nearbyInfos) {
             if (info.getType().isCatType()) {
                 Direction toCat = rc.getLocation().directionTo(catLoc);
-                catLoc = info.getLocation();                
+                catLoc = info.getLocation();
+                System.out.println("FoundCat at " + catLoc.toString()); // diagnostics              
                 if (rc.canTurn(toCat)) {
                     rc.turn(toCat);
                     break;
