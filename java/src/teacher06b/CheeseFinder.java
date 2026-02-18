@@ -1,4 +1,4 @@
-package teacher05a;
+package teacher06b;
 
 import java.util.ArrayList;
 
@@ -15,10 +15,6 @@ public class CheeseFinder extends BabyRat {
     public static MapLocation mineLoc = null;
     public static int numMines = 0;
     public static ArrayList<Integer> mineLocs = new ArrayList<>();
-
-    // Whether we are randomly turning to avoid getting unstuck
-    // while returning to the king
-    public static boolean gettingUnstuck = false;
 
     public CheeseFinder(RobotController rc) {
         super(rc);
@@ -141,6 +137,7 @@ public class CheeseFinder extends BabyRat {
                         boolean receivedMineLoc = false;
                         //while (!receivedMineLoc) {
                             Message[] squeakMessages = rc.readSqueaks(rc.getRoundNum());
+                            System.out.println("Received " + squeakMessages.length + " messages");
 
                             for (Message m : squeakMessages) {
                                 int msg = m.getBytes();
@@ -176,7 +173,7 @@ public class CheeseFinder extends BabyRat {
             // obstacle, then we go straight back to king again
             // hopefully from a different direction.
             gettingUnstuck = !gettingUnstuck;
-            while (!rc.canMoveForward()) {
+            if (!rc.canMoveForward()) {
                 d = directions[rand.nextInt(directions.length-1)];
                 if (rc.canTurn()) {
                     rc.turn(d);
