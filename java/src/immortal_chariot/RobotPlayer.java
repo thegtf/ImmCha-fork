@@ -1,9 +1,6 @@
-package teacher04a;
+package immortal_chariot;
 
 import battlecode.common.*;
-import teacher02b.BabyRat;
-import teacher02b.CatAttacker;
-import teacher02b.CheeseFinder;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -24,7 +21,7 @@ public class RobotPlayer {
         CAT_FOUND,
     }
 
-    public static State currentState;
+    static State currentState = null;
 
     public static SqueakType[] squeakTypes = SqueakType.values();
     public static Direction[] directions = Direction.values();
@@ -36,30 +33,35 @@ public class RobotPlayer {
 
     static MapLocation kingLoc = null;
 
-    static BabyRat brc;
+    //DDUNSTON REMOVED** static BabyRat brc; //
 
     public static void run(RobotController rc) {
-
-        // Only baby rats will pay attention to this
-        currentState = State.FIND_CHEESE;
-
-        if (rc.getType().isBabyRatType()) {
-            if (rc.getID() % 2 == 0) {
-                brc = new CheeseFinder();
-            } else {
-                brc = new CatAttacker();
-            }
+        //David Added better Status for Baby Rats//
+        if (!rc.getType().isRatKingType() && currentState == null) {
+             // Only baby rats will pay attention to this
+        currentState = State.FIND_CHEESE; 
         }
-
+        
         while (true) {
-        try {
-            if (rc.getType().isRatKingType()) {
+            try {
+                if (rc.getType().isRatKingType()) {
                 runRatKing(rc);
+                //David Added for BC specs//
+                Clock.yield();
+                continue;
             } else {
-                if (kingLoc == null) {
-                    kingLoc = rc.getLocation();
-                }
-                brc.doSomething(rc);
+            //David D* This sets the baby rat’s spawn location as the king location.//
+                //if (kingLoc == null) {
+                    //kingLoc = rc.getLocation();//
+                    }
+            
+        RobotInfo[] nearby = rc.senseNearbyRobots(8, rc.getTeam());
+for (RobotInfo r : nearby) {
+    if (r.getType().isRatKingType()) {
+        kingLoc = r.getLocation();
+        break;
+    }
+}
                 
                 switch (currentState) {
                     case FIND_CHEESE:
@@ -71,9 +73,11 @@ public class RobotPlayer {
                     case MINE_CHEESE:
                         runMineCheese(rc);
                         break;
-                }
-                }
-            } catch (GameActionException e) {
+                
+                }}
+        
+        
+        catch (GameActionException e) {
                 System.out.println("GameActionException in RobotPlayer:");
                 e.printStackTrace();
             } catch (Exception e) {
@@ -81,9 +85,9 @@ public class RobotPlayer {
                 e.printStackTrace();
             } finally {
                 Clock.yield();
-            }
-        }
-    }
+            }}}
+        
+    
 
     public static void runRatKing(RobotController rc) throws GameActionException {
         int currentCost = rc.getCurrentRatCost();
@@ -144,14 +148,17 @@ public class RobotPlayer {
     public static void moveRandom(RobotController rc) throws GameActionException {
 
         if (d == null) {
-            d = directions[rand.nextInt(directions.length-1)];
+            d = directions[rand.nextInt(directions.length)];
+            if (rc.canTurn(d)) {
+                rc.turn(d);
+            }
         }
 
         if (rc.canMoveForward()) {
             rc.moveForward();
         } else {
-            d = directions[rand.nextInt(directions.length-1)];
-            if (rc.canTurn()) {
+            
+            if (rc.canTurn(d)) {
                 rc.turn(d);
             }
         }
@@ -163,12 +170,17 @@ public class RobotPlayer {
 
     public static void runFindCheese(RobotController rc) throws GameActionException {
         // search for cheese
+       
+
         MapInfo[] nearbyInfos = rc.senseNearbyMapInfos();
 
         System.out.println("Sensed " + nearbyInfos.length + " tiles");
         MapLocation cheeseLoc = null;
         for (MapInfo info : nearbyInfos) {
             MapLocation loc = info.getMapLocation();
+             if (info.hasCheeseMine()) { mineLoc = info.getMapLocation(); currentState = State.MINE_CHEESE;}
+             
+
             if (info.getCheeseAmount() > 0) {
                 Direction toCheese = rc.getLocation().directionTo(loc);
 
@@ -180,8 +192,6 @@ public class RobotPlayer {
             }
             if (info.hasCheeseMine()) {
                 mineLoc = info.getMapLocation();
-                System.out.println("Found a cheese mine at " + mineLoc.toString());
-                rc.setIndicatorString("Found a cheese mine at " + mineLoc.toString());
             }
             if (rc.canRemoveDirt(loc)) {
                 rc.removeDirt(loc);
@@ -197,7 +207,7 @@ public class RobotPlayer {
             rc.setIndicatorString("Finding cheese.");
         } else {
             d = directions[rand.nextInt(directions.length-1)];
-            if (rc.canTurn()) {
+            if (rc.canTurn(d)) {
                 rc.turn(d);
             }
             rc.setIndicatorString("Blocked while finding cheese, turning " + d.toString());
@@ -214,13 +224,10 @@ public class RobotPlayer {
 
     public static void runReturnToKing(RobotController rc) throws GameActionException {
         MapLocation here = rc.getLocation();
+        if (kingLoc == null)return;
         Direction toKing = here.directionTo(kingLoc);
         MapLocation nextLoc = here.add(toKing);
         int rawCheese = rc.getRawCheese();
-
-        if (rc.canTurn(toKing)) {
-            rc.turn(toKing);
-        }
 
         if (rc.canSenseLocation(kingLoc) && (kingLoc.distanceSquaredTo(here) <= 4 )) {
 
@@ -239,42 +246,28 @@ public class RobotPlayer {
                         currentState = State.FIND_CHEESE;
                     }
                     break;
-                } else {
-                    // we found another baby rat, squeak or read squeaks,
-                    // based on whether we have a mine location to go to
-                    if (mineLoc != null) {
-                        int msgBytes = getSqueak(SqueakType.CHEESE_MINE, toInteger(mineLoc));
-                        rc.squeak(msgBytes);
-                        System.out.println("From " + here.toString() + " Sent a squeak " + msgBytes + " for mine at " + mineLoc.toString());
-                        // go back to finding cheese mode
-                    } else {
-                        Message[] squeakMessages = rc.readSqueaks(rc.getRoundNum());
-
-                        for (Message m : squeakMessages) {
-                            int msg = m.getBytes();
-                            if (getSqueakType(msg) == SqueakType.CHEESE_MINE) {
-                                int encodedLoc = getSqueakValue(msg);
-                                mineLoc = new MapLocation(getX(encodedLoc), getY(encodedLoc));
-                            }
-                        }
-                    }
-                    // whether we already have a mine location or just received one
-                    // go back to mining cheese
-                    currentState = State.FIND_CHEESE;
                 }
             }
 
+            if (mineLoc != null) {
+                //int msgBytes = getSqueak(SqueakType.CHEESE_MINE, toInteger(mineLoc));//
+                //rc.squeak(msgBytes);
+                mineLoc = null;
+            }
         }
-
+        
+        
         if (rc.canRemoveDirt(nextLoc)) {
             rc.removeDirt(nextLoc);
         }
 
         // TODO replace with pathfinding for the pathfinding lecture
-        if (rc.canMove(toKing)) {
-           rc.move(toKing);
-        }
-
+       // if (rc.canMove(toKing)) {
+           //rc.move(toKing);//}
+        //
+        if (rc.canTurn(toKing)) rc.turn(toKing);
+        
+        if (rc.canMoveForward()) rc.moveForward();
 
         if (rawCheese == 0) {
             currentState = State.FIND_CHEESE;
@@ -292,10 +285,6 @@ public class RobotPlayer {
         return loc >> 10;
     }
 
-    public static int toInteger(MapLocation loc) {
-        return (loc.x << 6) | loc.y;
-    }
-
     public static int getX(int encodedLoc) {
         return encodedLoc >> 6;
     }
@@ -303,29 +292,13 @@ public class RobotPlayer {
     public static int getY(int encodedLoc) {
         return encodedLoc % 64;
     }
-
-    public static int getSqueak(SqueakType type, int value) {
-        switch (type) {
-            case ENEMY_RAT_KING:
-                return (1 << 12) | value;
-            case ENEMY_COUNT:
-                return (2 << 12) | value;
-            case CHEESE_MINE:
-                return (3 << 12) | value;
-            case CAT_FOUND:
-                return (4 << 12) | value;
-            default:
-                return value;
-        }
-    }
     
-    public static SqueakType getSqueakType(int rawSqueak) {
-        return squeakTypes[rawSqueak >> 12];
+   public static SqueakType getSqueakType(int rawSqueak) {
+       return squeakTypes[rawSqueak >> 12];
     }
 
     public static int getSqueakValue(int rawSqueak) {
-        // Only uses lower 12 bits
         return rawSqueak % 4096;
-    }
     
-}
+};}
+
