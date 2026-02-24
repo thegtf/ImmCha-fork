@@ -24,22 +24,27 @@ public class PathFinding {
         }
         Direction d = rc.getLocation().directionTo(target);
 
+        if (ps == PathState.FOLLOW_WALL) {
+            int distNow = rc.getLocation().distanceSquaredTo(target);
+            if (rc.canMove(d) && distNow <= bestDist) {
+                ps = PathState.MOVE_TO_TARGET;
+                lastWallDir = null;
+            }
+        }
         if (ps == PathState.MOVE_TO_TARGET) {
             if (rc.canMove(d)) {
                 rc.move(d);
-            } else {
+                return;
+            }
                 ps = PathState.FOLLOW_WALL;
                 startBugDist = rc.getLocation().distanceSquaredTo(target);
                 bestDist = startBugDist;
                 lastWallDir = d;
-
                 followWall(rc, target, curr);
+                return;
             } 
-        } else {
             followWall(rc, target, curr);
         }
-        
-    }
 
 
     public void followWall(RobotController rc, MapLocation target, MapLocation curr) throws GameActionException {
@@ -68,7 +73,23 @@ public class PathFinding {
                         return; 
                     }
                 }
+                MapLocation here = rc.getLocation();
+                MapLocation fwd = here.add(rc.getDirection());
+                if (rc.canRemoveDirt(fwd)) {
+                    rc.removeDirt(fwd);
+                    return;
+                }
+                for (Direction digDir : Direction.values()) {
+                if (digDir == Direction.CENTER) continue;
+                MapLocation adj = here.add(digDir);
+                if (rc.canRemoveDirt(adj)) {
+                    rc.removeDirt(adj);
+                    return;
+                }
             }
+            ps = PathState.MOVE_TO_TARGET;
+            lastWallDir = null;
+        }
 
                 public void reset() {
                     ps = PathState.MOVE_TO_TARGET;
@@ -78,5 +99,4 @@ public class PathFinding {
                     startBugDist = Integer.MAX_VALUE;
         }
     }
-    
 
