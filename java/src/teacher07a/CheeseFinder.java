@@ -16,6 +16,7 @@ public class CheeseFinder extends BabyRat {
     public static MapLocation mineLoc = null;
     public static int numMines = 0;
     public static List<MapLocation> mineLocs = new ArrayList<>();
+    public static BugNav bugNav = null;
 
     public CheeseFinder(RobotController rc) {
         super(rc);
@@ -137,6 +138,12 @@ public class CheeseFinder extends BabyRat {
     }
 
     public void runReturnToKing() throws GameActionException {
+
+        if (bugNav != null) {
+            bugNav.move(rc);
+            return;
+        }
+
         MapLocation here = rc.getLocation();
         Direction toKing = here.directionTo(kingLoc);
         MapLocation nextLoc = here.add(toKing);
@@ -230,20 +237,11 @@ public class CheeseFinder extends BabyRat {
             // simply skip this turn and wait for the other robot to move
             return;
         } else {
+            MapInfo forwardInfo = rc.senseMapInfo(forwardLoc);
+            if (forwardInfo.isWall() && bugNav == null) {
+                bugNav = new BugNav(kingLoc, rc);
+            }
 
-            rc.setIndicatorString("Cannot moveforward while turned  " + rc.getDirection().toString());
-
-            // Toggle getting unstuck; we proceed in a straight line
-            // after getting unstuck until the next time we hit an
-            // obstacle, then we go straight back to king again
-            // hopefully from a different direction.
-            //gettingUnstuck = !gettingUnstuck;
-            // if (!rc.canMoveForward()) {
-            //     d = directions[rand.nextInt(directions.length-1)];
-            //     if (rc.canTurn()) {
-            //         rc.turn(d);
-            //     }
-            // }
             rc.setIndicatorString("Blocked while returning to king, turning " + d.toString());
             return;
         }
