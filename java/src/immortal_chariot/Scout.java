@@ -1,10 +1,10 @@
-package teacher05a;
+package immortal_chariot;
 
 import java.util.ArrayList;
 
 import battlecode.common.*;
 
-public class CheeseFinder extends BabyRat {
+public class Scout extends BabyRat {
 
     public static enum State {
         FIND_CHEESE,
@@ -18,12 +18,12 @@ public class CheeseFinder extends BabyRat {
 
     // Whether we are randomly turning to avoid getting unstuck
     // while returning to the king
-    public static boolean gettingUnstuck = false;
+    public static boolean iAmStuck = false;
 
-    public CheeseFinder(RobotController rc) {
+    public Scout(RobotController rc) {
         super(rc);
         currentState = State.FIND_CHEESE;
-        rc.setIndicatorString("Cheesefinder reporting for duty");
+        rc.setIndicatorString("Scout reporting for duty");
     }
 
     public void doAction() throws GameActionException {
@@ -52,7 +52,7 @@ public class CheeseFinder extends BabyRat {
                 if (info.getCheeseAmount() > 0) {
                     Direction toCheese = rc.getLocation().directionTo(loc);
 
-                    if (rc.canTurn(toCheese)) {
+                    if (rc.canTurn(toCheese) && !iAmStuck) {
                         rc.turn(toCheese);
                         cheeseLoc = info.getMapLocation();
                         break;
@@ -68,11 +68,11 @@ public class CheeseFinder extends BabyRat {
             // We know of a cheese mine, get closer because we are too far away
             System.out.println("Going straight to cheese mine at " + mineLoc.toString());
             Direction toMine = rc.getLocation().directionTo(mineLoc);
-            if (rc.canTurn(toMine)) {
+            if (rc.canTurn(toMine) && !iAmStuck) {
                 rc.turn(toMine);
             }
         }
-
+// cheese finding movement {
         MapLocation forward = here.add(rc.getDirection());
         if (rc.canRemoveDirt(forward)) {
             rc.removeDirt(forward);
@@ -80,6 +80,7 @@ public class CheeseFinder extends BabyRat {
 
         if (rc.canMoveForward()) {
             rc.moveForward();
+            iAmStuck = false;
             rc.setIndicatorString("Finding cheese.");
         } else {
             d = directions[rand.nextInt(directions.length-1)];
@@ -87,15 +88,15 @@ public class CheeseFinder extends BabyRat {
                 rc.turn(d);
             }
             rc.setIndicatorString("Blocked while finding cheese, turning " + d.toString());
+            iAmStuck = true;
             return;
         }
-
+//cheese finding movement }
         if ((cheeseLoc != null) && rc.canPickUpCheese(cheeseLoc)) {
             rc.pickUpCheese(cheeseLoc);
             currentState = State.RETURN_TO_KING;
             rc.setIndicatorString("Returning to king.");
         }
-
     }
 
     public void runReturnToKing() throws GameActionException {
@@ -105,7 +106,7 @@ public class CheeseFinder extends BabyRat {
         int rawCheese = rc.getRawCheese();
 
         // Only turn to the king if we are unstuck
-        if (gettingUnstuck && rc.canTurn(toKing)) {
+        if (!iAmStuck && rc.canTurn(toKing)) {
             rc.turn(toKing);
         }
 
@@ -166,17 +167,14 @@ public class CheeseFinder extends BabyRat {
         if (rc.canRemoveDirt(nextLoc)) {
             rc.removeDirt(nextLoc);
         }
-
+/* old return_to_king movement
         if (rc.canMoveForward()) {
             rc.moveForward();
+            iAmStuck = false;
             rc.setIndicatorString("Returning to king.");
         } else {
-            // Toggle getting unstuck; we proceed in a straight line
-            // after getting unstuck until the next time we hit an
-            // obstacle, then we go straight back to king again
-            // hopefully from a different direction.
-            gettingUnstuck = !gettingUnstuck;
-            while (!rc.canMoveForward()) {
+            iAmStuck = true;
+            while (!rc.canMoveForward()) {                                          //i think this while loop is the memory leak?
                 d = directions[rand.nextInt(directions.length-1)];
                 if (rc.canTurn()) {
                     rc.turn(d);
@@ -184,6 +182,20 @@ public class CheeseFinder extends BabyRat {
             }
             rc.moveForward();
             rc.setIndicatorString("Blocked while returning to king, turning " + d.toString());
+            return;
+        } old return_to_king movement */
+
+        if (rc.canMoveForward()) {
+            rc.moveForward();
+            iAmStuck = false;
+            rc.setIndicatorString("Returning to king.");
+        } else {
+            d = directions[rand.nextInt(directions.length-1)];
+            if (rc.canTurn()) {
+                rc.turn(d);
+            }
+            rc.setIndicatorString("Blocked while returning to king, turning " + d.toString());
+            iAmStuck = true;
             return;
         }
 

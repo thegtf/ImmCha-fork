@@ -8,6 +8,7 @@ public class RobotPlayer {
     static RobotSubPlayer rsp;
     static boolean babyRatToggle = false;
 
+
     public static void run(RobotController rc) {
 
         try {
@@ -34,5 +35,7 @@ public class RobotPlayer {
             }
         }
     }
-    
+    public static void run(Team te) {
+        
+    }
 }

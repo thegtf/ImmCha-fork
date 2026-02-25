@@ -1,10 +1,11 @@
-package teacher05a;
+package teacher06b;
 
 import battlecode.common.*;
 
 public abstract class BabyRat extends RobotSubPlayer {
 
     protected static MapLocation kingLoc = null;
+    public static boolean gettingUnstuck;
 
     public static SqueakType[] squeakTypes = SqueakType.values();
 
@@ -21,6 +22,8 @@ public abstract class BabyRat extends RobotSubPlayer {
         super(rc);
         // Save the location of the king who spawned us
         kingLoc = rc.getLocation();
+        gettingUnstuck = false;
+        d = rc.getDirection();
     }
 
     public static BabyRat createToggle(RobotController rc) throws GameActionException {

@@ -1,4 +1,4 @@
-package teacher05a;
+package teacher06b;
 
 import battlecode.common.*;
 
@@ -32,7 +32,7 @@ public class RatKing extends RobotSubPlayer {
             }
         }
 
-        // moveRandom(rc);
+        moveRandom(rc);
 
     }
     
