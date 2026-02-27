@@ -221,11 +221,11 @@ public class CheeseFinder extends BabyRat {
             }
 
             // If we haven't squeaked to another baby rat, stay here until we have
-            if (squeaked || receivedMineLoc) {
+            //if (squeaked || receivedMineLoc) {
                 currentState = State.FIND_CHEESE;
-                mineLoc = null; // reset so we choose a random new mine next time
-                return;
-            }
+            //    mineLoc = null; // reset so we choose a random new mine next time
+            //    return;
+            //}
         }
 
         MapLocation forwardLoc = rc.adjacentLocation(rc.getDirection());
