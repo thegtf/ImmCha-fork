@@ -1,0 +1,14 @@
+Rat king needs to dig,
+Rat king moves to a cheese mine and collects cheese nearby while holding mine
+spawn 2 teams of rats
+team 1 get cheese, return to king
+if (ratscount = 2k )
+all rats find cheese
+team 2 builds traps and fights
+if (ratscount = 2k + 1)
+
+once rats exceed 6 and global cheese = 100 -> form second ratking
+boolean canBecomeRatKing()
+Link icon
+void becomeRatKing() throws GameActionException
+the rat the is closest to the ratking has the other rats go to them to form grouping necessary to form ratking
