@@ -2,7 +2,6 @@ package immortal_chariot;
 
 import java.util.Random;
 
-import apple.laf.JRSUIConstants.Direction;
 import battlecode.common.*;
 
 public abstract class RobotSubPlayer {
@@ -37,7 +36,11 @@ public abstract class RobotSubPlayer {
         }
     }
 
-    public void bugNav0(RobotController rc, MapLocation goal) throws GameActionException {
+        /**
+         * this is a method to get rats unstuck and by tracing obstacles to the right
+         * @return true if we are close enough to goal that we can move there directly
+         * false otherwise */
+    public boolean bugNav0(RobotController rc, MapLocation goal) throws GameActionException {
         MapLocation here = rc.getLocation();
         Direction toGoal = here.directionTo(goal);
         Direction left = rc.getDirection().rotateLeft();
@@ -47,6 +50,7 @@ public abstract class RobotSubPlayer {
                 rc.turn(toGoal);
                 rc.moveForward();
                 followingWall = false;
+                
             } else {
                 followingWall = true;
             }
@@ -64,9 +68,8 @@ public abstract class RobotSubPlayer {
                 }
             }
 
-            if (here.distanceSquaredTo(goal)<=4 && rc.canMove(toGoal)) {
-                break;
-            }
+            return here.distanceSquaredTo(goal)<=4 && rc.canMove(toGoal);
+        
     }
     
     // public void writeRatKingCount(int ratKingCount) throws GameActionException {

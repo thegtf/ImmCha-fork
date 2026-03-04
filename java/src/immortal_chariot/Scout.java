@@ -3,6 +3,8 @@ package immortal_chariot;
 import java.util.ArrayList;
 
 import battlecode.common.*;
+import battlecode.world.control.RobotControlProvider;
+import teacher07a.BugNav;
 
 public class Scout extends BabyRat {
 
@@ -77,8 +79,8 @@ public class Scout extends BabyRat {
         if (rc.canRemoveDirt(forward)) {
             rc.removeDirt(forward);
         }
-
-        if (rc.canMoveForward()) {
+    bugNav0(rc, mineLoc); 
+     /*    if (rc.canMoveForward()) {
             rc.moveForward();
             iAmStuck = false;
             rc.setIndicatorString("Finding cheese.");
@@ -91,6 +93,7 @@ public class Scout extends BabyRat {
             iAmStuck = true;
             return;
         }
+        */
 //cheese finding movement }
         if ((cheeseLoc != null) && rc.canPickUpCheese(cheeseLoc)) {
             rc.pickUpCheese(cheeseLoc);
